@@ -1,17 +1,22 @@
 package com.oppwa.mobile.connect.demo.activity;
 
 import android.content.ComponentName;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 import androidx.annotation.Nullable;
+import com.oppwa.mobile.connect.checkout.dialog.CheckoutActivity;
 import com.oppwa.mobile.connect.checkout.dialog.PaymentButtonFragment;
 import com.oppwa.mobile.connect.checkout.meta.CheckoutSettings;
 import com.oppwa.mobile.connect.demo.R;
 import com.oppwa.mobile.connect.demo.common.Constants;
 import com.oppwa.mobile.connect.demo.receiver.CheckoutBroadcastReceiver;
+import com.oppwa.mobile.connect.exception.PaymentError;
 import com.oppwa.mobile.connect.exception.PaymentException;
+import com.oppwa.mobile.connect.provider.Transaction;
+import com.oppwa.mobile.connect.provider.TransactionType;
 
 
 /**
@@ -71,6 +76,34 @@ public class PaymentButtonActivity extends BasePaymentActivity {
             showProgressDialog(R.string.progress_message_processing_payment);
         } catch (PaymentException e) {
             showAlertDialog(R.string.error_message);
+        }
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (resultCode) {
+            case CheckoutActivity.RESULT_OK:
+                /* transaction completed */
+                Transaction transaction = data.getParcelableExtra(CheckoutActivity.CHECKOUT_RESULT_TRANSACTION);
+
+                /* resource path if needed */
+                String resourcePath = data.getStringExtra(CheckoutActivity.CHECKOUT_RESULT_RESOURCE_PATH);
+
+                if (transaction.getTransactionType() == TransactionType.SYNC) {
+                    /* check the result of synchronous transaction */
+                } else {
+                    /* wait for the asynchronous transaction callback in the onNewIntent() */
+                }
+
+                break;
+            case CheckoutActivity.RESULT_CANCELED:
+                /* shopper canceled the checkout process */
+                break;
+            case CheckoutActivity.RESULT_ERROR:
+                /* error occurred */
+                PaymentError error = data.getParcelableExtra(CheckoutActivity.CHECKOUT_RESULT_ERROR);
         }
     }
 }
